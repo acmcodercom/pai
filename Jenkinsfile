@@ -11,7 +11,7 @@ pipeline {
         script {
           sh (
             script: '''#!/bin/bash
-set -x
+set -ex
 IFS=", " read -r -a labels <<< "$NODE_NAME"
 #echo ${labels[@]}
 echo ${labels[0]} > ${WORKSPACE}/BED.txt
@@ -19,12 +19,15 @@ echo ${labels[0]} > ${WORKSPACE}/BED.txt
             returnStdout: true
           )
           env.BED = readFile("${WORKSPACE}/BED.txt").trim()
+          echo "Select CI Cluster: ${BED}"
 
           sh '''#!/bin/bash
+set -ex
+
 echo ${GIT_BRANCH/\\//-}-$(git rev-parse --short HEAD)-${BUILD_ID} > ${WORKSPACE}/IMAGE_TAG.txt
 '''
           env.IMAGE_TAG = readFile("${WORKSPACE}/IMAGE_TAG.txt").trim()
-          echo "Select CI Cluster: ${BED}"
+          echo "Image tag: ${IMAGE_TAG}"
         }
         sh 'printenv'
       }
@@ -38,7 +41,7 @@ echo ${GIT_BRANCH/\\//-}-$(git rev-parse --short HEAD)-${BUILD_ID} > ${WORKSPACE
       }
       steps {
         sh '''#!/bin/bash
-set -x
+set -ex
 sudo --preserve-env $JENKINS_HOME/scripts/prepare_build_env.sh'''
       }
     }
@@ -52,7 +55,7 @@ sudo --preserve-env $JENKINS_HOME/scripts/prepare_build_env.sh'''
       steps {
         sh '''#! /bin/bash
 
-set -x
+set -ex
 
 # prepare path
 sudo mkdir -p ${JENKINS_HOME}/${BED}/singlebox/quick-start
@@ -127,7 +130,7 @@ set -x
 
 # Working in your dev-box
 sudo docker exec -i ${SINGLE_BOX_DEV_BOX} /bin/bash <<EOF_DEV_BOX
-set -x
+set -ex
 
 # prepare directory
 rm -rf /cluster-configuration/cluster-configuration.yaml
@@ -184,7 +187,7 @@ sudo chown core:core -R /mnt/jenkins/workspace
           }
           steps {
             sh '''#!/bin/bash
-set -x
+set -ex
 
 CONFIG_PATH=${JENKINS_HOME}/${BED}/cluster/cluster-configuration
 QUICK_START_PATH=${JENKINS_HOME}/${BED}/cluster/quick-start
@@ -210,7 +213,7 @@ sudo docker run -itd \
               env.CLUSTER_DEV_BOX = readFile("$WORKSPACE/CLUSTER_DEV_BOX.txt").trim()
             }
             sh '''#!/bin/bash
-set -x
+set -ex
 
 # Working in your dev-box
 sudo docker exec -i ${CLUSTER_DEV_BOX} /bin/bash <<EOF_DEV_BOX
@@ -286,7 +289,7 @@ sudo chown core:core -R /mnt/jenkins/workspace
                   script: '''#!/bin/bash
 
 
-set -x
+set -ex
 #set -euxo pipefail
 
 sleep 300
@@ -363,7 +366,7 @@ done
                   //returnStatus: true,
                   script: '''#!/bin/bash
 
-set -x
+set -ex
 #set -euxo pipefail
 
 sleep 300
